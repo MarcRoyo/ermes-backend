@@ -1,0 +1,75 @@
+version: "3"
+
+vars:
+  HOST: '{{default "0.0.0.0" .HOST}}'
+  PORT: '{{default "8091" .PORT}}'
+  IMAGE: '{{default "ermes-backend" .IMAGE}}'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install project and development dependencies
+    cmds:
+      - poetry install --no-root
+
+  lock:
+    desc: Resolve dependencies and create/update poetry.lock
+    cmds:
+      - poetry lock
+
+  run:
+    desc: Run the backend
+    cmds:
+      - poetry run uvicorn ermes_backend.main:app --host {{.HOST}} --port {{.PORT}}
+
+  dev:
+    desc: Run the backend with auto-reload
+    cmds:
+      - poetry run uvicorn ermes_backend.main:app --host {{.HOST}} --port {{.PORT}} --reload
+
+  lint:
+    desc: Run Ruff checks
+    cmds:
+      - poetry run ruff check .
+
+  format:
+    desc: Format the Python source with Ruff
+    cmds:
+      - poetry run ruff format .
+      - poetry run ruff check --fix .
+
+  test:
+    desc: Run tests
+    cmds:
+      - poetry run python -m pytest
+
+  check:
+    desc: Run syntax, lint and tests
+    cmds:
+      - python3 -m compileall -q ermes_backend
+      - poetry run ruff check .
+      - poetry run python -m pytest
+
+  build:
+    desc: Build the Docker image
+    cmds:
+      - docker build -t {{.IMAGE}} .
+
+  run:
+    desc: Run the Docker image locally
+    cmds:
+      - >-
+        docker run --rm
+        -p {{.PORT}}:8091
+        -e ERMES_ORCHESTRATOR_URL=${ERMES_ORCHESTRATOR_URL:-http://host.docker.internal:8090}
+        -e ERMES_ALLOWED_ORIGINS=${ERMES_ALLOWED_ORIGINS:-http://localhost:5173}
+        {{.IMAGE}}
+        
+  test:ws-smoke:
+    desc: Test realtime WebSocket against a running orchestrator
+    cmds:
+      - poetry run python scripts/ws_smoke.py
