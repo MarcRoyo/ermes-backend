@@ -101,39 +101,11 @@ Checks connectivity to the orchestrator:
 curl http://localhost:8091/ready
 ```
 
-## Non-streaming chat
+## WebSocket chat
 
-```bash
-curl \
-  -X POST \
-  http://localhost:8091/v1/messages \
-  -H 'Content-Type: application/json' \
-  -d '{"message":"Hola"}'
-```
-
-## Streaming chat
-
-```bash
-curl -N \
-  -X POST \
-  http://localhost:8091/v1/messages/stream \
-  -H 'Content-Type: application/json' \
-  -H 'Accept: text/event-stream' \
-  -d '{"message":"Explica breument què és una xarxa neuronal"}'
-```
-
-Expected stream:
-
-```text
-event: message.started
-data: {}
-
-event: message.delta
-data: {"delta":"..."}
-
-event: message.completed
-data: {}
-```
+Connect to `ws://localhost:8091/v1/ws`, send `session.sync`, and wait for
+`session.synced` before sending `message.commit`. Run `task test:ws-smoke` to
+exercise the exchange against a running stack.
 
 ## Docker
 

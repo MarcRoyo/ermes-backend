@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .api import router
 from .config import Settings
+from .filestorage import router as filestorage_router
 from .orchestrator import OrchestratorClient
 from .realtime.websocket import (
     create_realtime_router,
@@ -122,6 +123,7 @@ app.add_middleware(
 app.include_router(
     router
 )
+app.include_router(filestorage_router)
 
 
 #
